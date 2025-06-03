@@ -1,6 +1,28 @@
 # competitions
 
-A new Flutter project.
+Application Flutter innovante pour explorer les compétitions, équipes et joueurs de football.
+
+## Fonctionnalités principales
+
+- **Recherche avancée** : Trouvez des compétitions, équipes et joueurs grâce à une interface intuitive.
+- **Favoris** : Ajoutez vos équipes et joueurs préférés pour un accès rapide.
+- **Carte interactive** : Visualisez la localisation des stades et équipes sur une carte.
+- **Détails complets** : Accédez à la fiche détaillée de chaque équipe, joueur ou compétition (infos, logo, stade, etc.).
+- **Design moderne** : Thème clair/sombre switchable, couleurs personnalisées (#325753, #38c172, #eeeeef, #23292c), glassmorphism et typographie soignée.
+
+## Prise en main
+
+- Lancez l'application sur un appareil ou un émulateur Flutter.
+- Utilisez la barre de navigation pour accéder à la recherche, aux favoris ou à la carte.
+- Changez le mode clair/sombre via l'icône dans l'AppBar.
+
+## Dépendances utiles
+- [flutter_map](https://pub.dev/packages/flutter_map) pour la carte
+- [sqflite](https://pub.dev/packages/sqflite) pour la gestion locale des favoris
+
+---
+
+Projet réalisé pour la découverte et la gestion du football avec une expérience utilisateur moderne et agréable.
 
 ## Getting Started
 
