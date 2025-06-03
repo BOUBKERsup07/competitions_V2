@@ -85,8 +85,8 @@ class _MapScreenState extends State<MapScreen> {
       firstTeamPosition ??= position;
 
       markers.add(Marker(
-        width: 80,
-        height: 80,
+        width: 40,
+        height: 40,
         point: position,
         builder: (ctx) => GestureDetector(
           onTap: () {
@@ -97,8 +97,8 @@ class _MapScreenState extends State<MapScreen> {
           child: ClipOval(
             child: Image.network(
               team.logo,
-              width: 50,
-              height: 50,
+              width: 40,
+              height: 40,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) =>
                   const Icon(Icons.broken_image, size: 40),
@@ -288,131 +288,152 @@ class _TeamPopupState extends State<_TeamPopup> {
   @override
   Widget build(BuildContext context) {
     final team = widget.team;
+    final maxWidth = MediaQuery.of(context).size.width * 0.92;
+    final minWidth = 320.0;
     return Material(
       color: Colors.transparent,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(32),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 24,
-              offset: Offset(0, 8),
-            ),
-          ],
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Align(
-                alignment: Alignment.topRight,
-                child: IconButton(
-                  icon: Icon(Icons.close),
-                  onPressed: widget.onClose,
+      child: Center(
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: maxWidth,
+            minWidth: minWidth,
+          ),
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 32),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 24,
+                offset: Offset(0, 8),
+              ),
+            ],
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Align(
+                  alignment: Alignment.topRight,
+                  child: IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: widget.onClose,
+                  ),
                 ),
-              ),
-              CircleAvatar(
-                backgroundImage: team.logo.isNotEmpty ? NetworkImage(team.logo) : null,
-                radius: 40,
-                child: team.logo.isEmpty ? Icon(Icons.people, size: 40) : null,
-              ),
-              SizedBox(height: 12),
-              Text(
-                team.name,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 4),
-              Text(
-                'Stade: ${team.venue}',
-                style: Theme.of(context).textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              Divider(height: 24),
-              Row(
-                children: [
-                  Icon(Icons.calendar_today, color: Theme.of(context).colorScheme.primary),
-                  SizedBox(width: 8),
-                  Text('Année de fondation', style: Theme.of(context).textTheme.bodyMedium),
-                  Spacer(),
-                  Text('${team.founded}', style: TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.flag, color: Theme.of(context).colorScheme.primary),
-                  SizedBox(width: 8),
-                  Text('Pays', style: Theme.of(context).textTheme.bodyMedium),
-                  Spacer(),
-                  Text(team.country, style: TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.location_on, color: Theme.of(context).colorScheme.primary),
-                  SizedBox(width: 8),
-                  Text('Adresse', style: Theme.of(context).textTheme.bodyMedium),
-                  Spacer(),
-                  Text(team.venue, style: TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-              SizedBox(height: 20),
-              if (_isFavorite)
+                CircleAvatar(
+                  backgroundImage: team.logo.isNotEmpty ? NetworkImage(team.logo) : null,
+                  radius: 48,
+                  child: team.logo.isEmpty ? Icon(Icons.people, size: 10) : null,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  team.name,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Stade: ${team.venue}',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+                Divider(height: 24),
+                Row(
+                  children: [
+                    Icon(Icons.calendar_today, color: Theme.of(context).colorScheme.primary),
+                    SizedBox(width: 8),
+                    Text('Année de fondation', style: Theme.of(context).textTheme.bodyMedium),
+                    Spacer(),
+                    Text('${team.founded}', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.flag, color: Theme.of(context).colorScheme.primary),
+                    SizedBox(width: 8),
+                    Text('Pays', style: Theme.of(context).textTheme.bodyMedium),
+                    Spacer(),
+                    Text(team.country, style: TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.location_on, color: Theme.of(context).colorScheme.primary),
+                    SizedBox(width: 8),
+                    Text('Adresse', style: Theme.of(context).textTheme.bodyMedium),
+                    Spacer(),
+                    Text(team.venue, style: TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                SizedBox(height: 20),
+                if (_isFavorite)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: Icon(Icons.favorite, color: Colors.white),
+                          label: Text('Retirer des favoris'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            minimumSize: Size(0, 48),
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            textStyle: TextStyle(fontSize: 16),
+                          ),
+                          onPressed: _removeFavorite,
+                        ),
+                      ),
+                    ],
+                  ),
+                if (_isFavorite) SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        icon: Icon(Icons.favorite, color: Colors.white),
-                        label: Text('Retirer des favoris'),
+                        icon: Icon(Icons.info_outline),
+                        label: Text('Détails'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
+                          backgroundColor: Colors.orange,
+                          foregroundColor: Colors.white,
+                          minimumSize: Size(0, 48),
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          textStyle: TextStyle(fontSize: 16),
                         ),
-                        onPressed: _removeFavorite,
+                        onPressed: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) => TeamDetail(team: team),
+                          ));
+                          widget.onClose();
+                        },
                       ),
                     ),
                   ],
                 ),
-              SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      icon: Icon(Icons.info_outline),
-                      label: Text('Détails'),
-                      onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (_) => TeamDetail(team: team),
-                        ));
-                        widget.onClose();
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      icon: Icon(Icons.map),
-                      label: Text('Google Maps'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
+                SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: Icon(Icons.map),
+                        label: Text('Google Maps'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          minimumSize: Size(0, 48),
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          textStyle: TextStyle(fontSize: 16),
+                        ),
+                        onPressed: _openGoogleMaps,
                       ),
-                      onPressed: _openGoogleMaps,
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
