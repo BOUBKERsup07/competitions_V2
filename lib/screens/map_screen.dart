@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/team.dart';
 import '../services/api_service.dart';
 import '../services/database_service.dart';
+import 'team_detail.dart';
 
 class MapScreen extends StatefulWidget {
   @override
@@ -23,6 +25,7 @@ class _MapScreenState extends State<MapScreen> {
   List<Team> _searchResults = [];
   List<Marker> _markers = [];
   LatLng _center = LatLng(48.8566, 2.3522); // Paris
+  Team? _selectedTeam;
 
   @override
   void initState() {
@@ -85,8 +88,12 @@ class _MapScreenState extends State<MapScreen> {
         width: 80,
         height: 80,
         point: position,
-        builder: (ctx) => Tooltip(
-          message: '${team.name}\n${team.venue ?? "Lieu inconnu"}',
+        builder: (ctx) => GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedTeam = team;
+            });
+          },
           child: ClipOval(
             child: Image.network(
               team.logo,
@@ -94,7 +101,7 @@ class _MapScreenState extends State<MapScreen> {
               height: 50,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) =>
-              const Icon(Icons.broken_image, size: 40),
+                  const Icon(Icons.broken_image, size: 40),
               loadingBuilder: (context, child, progress) {
                 if (progress == null) return child;
                 return const CircularProgressIndicator();
@@ -160,48 +167,254 @@ class _MapScreenState extends State<MapScreen> {
             )
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          if (!_isShowingFavorites)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (val) => _onSearchChanged(),
-                decoration: InputDecoration(
-                  hintText: 'Rechercher une équipe...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0)),
+          Column(
+            children: [
+              if (!_isShowingFavorites)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (val) => _onSearchChanged(),
+                    decoration: InputDecoration(
+                      hintText: 'Rechercher une équipe...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0)),
+                    ),
+                  ),
                 ),
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _errorMessage != null
+                        ? Center(child: Text(_errorMessage!))
+                        : FlutterMap(
+                            options: MapOptions(
+                              center: _center,
+                              zoom: 5.5,
+                            ),
+                            children: [
+                              TileLayer(
+                                urlTemplate:
+                                    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                subdomains: const ['a', 'b', 'c'],
+                              ),
+                              MarkerLayer(markers: _markers),
+                            ],
+                          ),
               ),
-            ),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _errorMessage != null
-                ? Center(child: Text(_errorMessage!))
-                : FlutterMap(
-              options: MapOptions(
-                center: _center,
-                zoom: 5.5,
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate:
-                  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  subdomains: const ['a', 'b', 'c'],
-                ),
-                MarkerLayer(markers: _markers),
-              ],
-            ),
+            ],
           ),
+          if (_selectedTeam != null)
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () => setState(() => _selectedTeam = null),
+                behavior: HitTestBehavior.translucent,
+                child: Center(
+                  child: GestureDetector(
+                    onTap: () {}, // Empêche la propagation du tap au popup
+                    child: _TeamPopup(
+                      team: _selectedTeam!,
+                      onClose: () => setState(() => _selectedTeam = null),
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         tooltip: 'Voir favoris',
         child: const Icon(Icons.favorite),
         onPressed: _loadFavoriteTeams,
+      ),
+    );
+  }
+}
+
+class _TeamPopup extends StatefulWidget {
+  final Team team;
+  final VoidCallback onClose;
+  const _TeamPopup({required this.team, required this.onClose});
+
+  @override
+  State<_TeamPopup> createState() => _TeamPopupState();
+}
+
+class _TeamPopupState extends State<_TeamPopup> {
+  bool _isFavorite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfFavorite();
+  }
+
+  Future<void> _checkIfFavorite() async {
+    // On suppose que DatabaseService est accessible via context ou singleton
+    final db = DatabaseService();
+    final favs = await db.getFavoriteTeams();
+    setState(() {
+      _isFavorite = favs.any((t) => t.id == widget.team.id);
+    });
+  }
+
+  Future<void> _removeFavorite() async {
+    final db = DatabaseService();
+    await db.removeTeam(widget.team.id);
+    setState(() {
+      _isFavorite = false;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Équipe retirée des favoris')),
+    );
+    widget.onClose();
+  }
+
+  void _openGoogleMaps() async {
+    final query = Uri.encodeComponent(widget.team.venue.isNotEmpty ? widget.team.venue : widget.team.name);
+    final url = 'https://www.google.com/maps/search/?api=1&query=$query';
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Impossible d\'ouvrir Google Maps')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final team = widget.team;
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 24,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  icon: Icon(Icons.close),
+                  onPressed: widget.onClose,
+                ),
+              ),
+              CircleAvatar(
+                backgroundImage: team.logo.isNotEmpty ? NetworkImage(team.logo) : null,
+                radius: 40,
+                child: team.logo.isEmpty ? Icon(Icons.people, size: 40) : null,
+              ),
+              SizedBox(height: 12),
+              Text(
+                team.name,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 4),
+              Text(
+                'Stade: ${team.venue}',
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+              Divider(height: 24),
+              Row(
+                children: [
+                  Icon(Icons.calendar_today, color: Theme.of(context).colorScheme.primary),
+                  SizedBox(width: 8),
+                  Text('Année de fondation', style: Theme.of(context).textTheme.bodyMedium),
+                  Spacer(),
+                  Text('${team.founded}', style: TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.flag, color: Theme.of(context).colorScheme.primary),
+                  SizedBox(width: 8),
+                  Text('Pays', style: Theme.of(context).textTheme.bodyMedium),
+                  Spacer(),
+                  Text(team.country, style: TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.location_on, color: Theme.of(context).colorScheme.primary),
+                  SizedBox(width: 8),
+                  Text('Adresse', style: Theme.of(context).textTheme.bodyMedium),
+                  Spacer(),
+                  Text(team.venue, style: TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+              SizedBox(height: 20),
+              if (_isFavorite)
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: Icon(Icons.favorite, color: Colors.white),
+                        label: Text('Retirer des favoris'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        onPressed: _removeFavorite,
+                      ),
+                    ),
+                  ],
+                ),
+              SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      icon: Icon(Icons.info_outline),
+                      label: Text('Détails'),
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => TeamDetail(team: team),
+                        ));
+                        widget.onClose();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      icon: Icon(Icons.map),
+                      label: Text('Google Maps'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: _openGoogleMaps,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
