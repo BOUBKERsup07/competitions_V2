@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'search_screen.dart';
 import 'favorites_screen.dart';
+import 'package:flutter/material.dart';
+import 'search_screen.dart';
+import 'favorites_screen.dart';
 import 'map_screen.dart';
 
 class HomeScreen extends StatefulWidget {
