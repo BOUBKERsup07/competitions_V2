@@ -110,91 +110,124 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      /// Barre d'onglets pour naviguer entre équipes et joueurs
       appBar: AppBar(
         title: Text('Favoris'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: 'Équipes'),
-            Tab(text: 'Joueurs'),
-          ],
-        ),
       ),
-      /// Contenu principal avec les listes de favoris
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                /// Liste des équipes favorites
-                _favoriteTeams.isEmpty
-                    ? Center(child: Text('Aucune équipe favorite'))
-                    : ListView.builder(
-                        itemCount: _favoriteTeams.length,
-                        itemBuilder: (context, index) {
-                          final team = _favoriteTeams[index];
-                          return ListTile(
-                            leading: team.logo.isNotEmpty
-                                ? Image.network(
-                                    team.logo,
-                                    width: 40,
-                                    height: 40,
-                                    errorBuilder: (context, error, stackTrace) =>
-                                        Icon(Icons.sports_soccer),
-                                  )
-                                : Icon(Icons.sports_soccer),
-                            title: Text(team.name),
-                            subtitle: Text(team.country),
-                            trailing: IconButton(
-                              icon: Icon(Icons.favorite, color: Colors.red),
-                              onPressed: () => _removeTeam(team),
-                            ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => TeamDetail(team: team),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                /// Liste des joueurs favoris
-                _favoritePlayers.isEmpty
-                    ? Center(child: Text('Aucun joueur favori'))
-                    : ListView.builder(
-                        itemCount: _favoritePlayers.length,
-                        itemBuilder: (context, index) {
-                          final player = _favoritePlayers[index];
-                          return ListTile(
-                            leading: player.photo.isNotEmpty
-                                ? CircleAvatar(
-                                    backgroundImage: NetworkImage(player.photo),
-                                  )
-                                : CircleAvatar(
-                                    child: Text(player.name[0]),
-                                  ),
-                            title: Text(player.name),
-                            subtitle: Text(player.position),
-                            trailing: IconButton(
-                              icon: Icon(Icons.favorite, color: Colors.red),
-                              onPressed: () => _removePlayer(player),
-                            ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => PlayerDetail(player: player),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-              ],
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(12.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4.0,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: TabBar(
+                controller: _tabController,
+                labelColor: Theme.of(context).primaryColor,
+                unselectedLabelColor: Colors.grey[600],
+                indicatorColor: Theme.of(context).primaryColor,
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicatorWeight: 3.0,
+                labelStyle: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                unselectedLabelStyle: TextStyle(fontSize: 14),
+                tabs: [
+                  Tab(text: 'Équipes'),
+                  Tab(text: 'Joueurs'),
+                ],
+              ),
             ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? Center(child: CircularProgressIndicator())
+                : TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _favoriteTeams.isEmpty
+                          ? Center(child: Text('Aucune équipe favorite'))
+                          : ListView.builder(
+                              itemCount: _favoriteTeams.length,
+                              itemBuilder: (context, index) {
+                                final team = _favoriteTeams[index];
+                                return Card(
+                                  margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                                  child: ListTile(
+                                    leading: team.logo.isNotEmpty
+                                        ? Image.network(
+                                            team.logo,
+                                            width: 40,
+                                            height: 40,
+                                            errorBuilder: (context, error, stackTrace) =>
+                                                Icon(Icons.sports_soccer, size: 40),
+                                          )
+                                        : Icon(Icons.sports_soccer, size: 40),
+                                    title: Text(team.name, style: TextStyle(fontWeight: FontWeight.w500)),
+                                    subtitle: Text(team.country),
+                                    trailing: IconButton(
+                                      icon: Icon(Icons.favorite, color: Colors.red),
+                                      onPressed: () => _removeTeam(team),
+                                    ),
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => TeamDetail(team: team),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                      _favoritePlayers.isEmpty
+                          ? Center(child: Text('Aucun joueur favori'))
+                          : ListView.builder(
+                              itemCount: _favoritePlayers.length,
+                              itemBuilder: (context, index) {
+                                final player = _favoritePlayers[index];
+                                return Card(
+                                  margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                                  child: ListTile(
+                                    leading: player.photo.isNotEmpty
+                                        ? CircleAvatar(
+                                            radius: 20,
+                                            backgroundImage: NetworkImage(player.photo),
+                                          )
+                                        : CircleAvatar(
+                                            radius: 20,
+                                            child: Text(player.name[0]),
+                                          ),
+                                    title: Text(player.name, style: TextStyle(fontWeight: FontWeight.w500)),
+                                    subtitle: Text(player.position),
+                                    trailing: IconButton(
+                                      icon: Icon(Icons.favorite, color: Colors.red),
+                                      onPressed: () => _removePlayer(player),
+                                    ),
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => PlayerDetail(player: player),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                    ],
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }
