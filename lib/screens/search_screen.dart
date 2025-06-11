@@ -7,148 +7,227 @@ import 'team_detail.dart';
 import 'player_detail.dart';
 import 'competition_detail.dart';
 
-/// Écran de recherche des équipes
-/// Permet aux utilisateurs de rechercher et filtrer les équipes
 class SearchScreen extends StatefulWidget {
   @override
   _SearchScreenState createState() => _SearchScreenState();
 }
 
-/// État de l'écran de recherche
-/// Gère la logique de recherche et l'affichage des résultats
 class _SearchScreenState extends State<SearchScreen> {
-  /// Service API pour récupérer les données
-  final ApiService _apiService = ApiService();
-  /// Contrôleur du champ de recherche
-  final TextEditingController _searchController = TextEditingController();
-  /// Liste des équipes filtrées par la recherche
-  List<Team> _filteredTeams = [];
-  /// Indique si la recherche est en cours
-  bool _isLoading = false;
+  final ApiService apiService = ApiService();
+
+  String _searchQuery = '';
+  int _selectedTab = 0; // 0 = Competitions, 1 = Teams, 2 = Players
+  List<Team> _teams = [];
+  List<Player> _players = [];
+  List<Competition> _competitions = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadTeams();
+    _fetchData();
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  /// Charge la liste initiale des équipes
-  Future<void> _loadTeams() async {
-    setState(() {
-      _isLoading = true;
-    });
-
+  Future<void> _fetchData() async {
     try {
-      final teams = await _apiService.fetchTeamsFromApi();
+      final fetchedTeams = await apiService.fetchTeamsFromApi();
+      final fetchedCompetitions = await apiService.fetchCompetitionsFromApi();
+
+      final fetchedPlayers = fetchedTeams.isNotEmpty
+          ? await apiService.fetchPlayersFromApi(fetchedTeams.first)
+          : <Player>[];
+
       setState(() {
-        _filteredTeams = teams;
+        _teams = fetchedTeams;
+        _players = fetchedPlayers;
+        _competitions = fetchedCompetitions;
         _isLoading = false;
       });
     } catch (e) {
+      print('Erreur de chargement: $e');
       setState(() {
         _isLoading = false;
       });
-      _showErrorSnackBar('Erreur lors du chargement des équipes');
     }
-  }
-
-  /// Filtre les équipes en fonction du texte de recherche
-  void _filterTeams(String query) async {
-    if (query.isEmpty) {
-      await _loadTeams();
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final teams = await _apiService.searchTeams(query);
-      setState(() {
-        _filteredTeams = teams;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      _showErrorSnackBar('Erreur lors de la recherche');
-    }
-  }
-
-  /// Affiche un message d'erreur
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      appBar: AppBar(title: Text('Recherche Sportive')),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
         children: [
-          /// Barre de recherche
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16.0),
             child: TextField(
-              controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Rechercher une équipe...',
+                hintText: 'Rechercher...',
                 prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                border: OutlineInputBorder(),
               ),
-              onChanged: _filterTeams,
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
             ),
           ),
-          /// Liste des résultats
+          Row(
+            children: [
+              _buildTabButton('Compétitions', 0),
+              _buildTabButton('Équipes', 1),
+              _buildTabButton('Joueurs', 2),
+            ],
+          ),
           Expanded(
-            child: _isLoading
-                ? Center(child: CircularProgressIndicator())
-                : _filteredTeams.isEmpty
-                    ? Center(child: Text('Aucune équipe trouvée'))
-                    : ListView.builder(
-                        itemCount: _filteredTeams.length,
-                        itemBuilder: (context, index) {
-                          final team = _filteredTeams[index];
-                          return ListTile(
-                            leading: team.logo.isNotEmpty
-                                ? Image.network(
-                                    team.logo,
-                                    width: 40,
-                                    height: 40,
-                                    errorBuilder: (context, error, stackTrace) =>
-                                        Icon(Icons.sports_soccer),
-                                  )
-                                : Icon(Icons.sports_soccer),
-                            title: Text(team.name),
-                            subtitle: Text(team.country),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => TeamDetailScreen(team: team),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
+            child: _getCurrentTabView(),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _getCurrentTabView() {
+    switch (_selectedTab) {
+      case 0:
+        return _buildCompetitionsList();
+      case 1:
+        return _buildTeamsList();
+      case 2:
+        return _buildPlayersList();
+      default:
+        return _buildCompetitionsList();
+    }
+  }
+
+  Widget _buildTabButton(String text, int index) {
+    return Expanded(
+      child: TextButton(
+        style: TextButton.styleFrom(
+          backgroundColor:
+          _selectedTab == index ? Colors.blue[100] : Colors.transparent,
+        ),
+        onPressed: () {
+          setState(() {
+            _selectedTab = index;
+          });
+        },
+        child: Text(text),
+      ),
+    );
+  }
+
+  Widget _buildTeamsList() {
+    final filtered = _teams
+        .where((team) =>
+        team.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
+
+    return ListView.builder(
+      itemCount: filtered.length,
+      itemBuilder: (context, index) {
+        final team = filtered[index];
+        return Card(
+          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ListTile(
+            leading: team.logo.isNotEmpty
+                ? Image.network(team.logo, width: 40, height: 40)
+                : CircleAvatar(child: Text(team.name[0])),
+            title: Text(team.name, style: TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(team.venue),
+                Text('Fondé en ${team.founded}'),
+              ],
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TeamDetail(team: team)),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPlayersList() {
+    final filtered = _players
+        .where((p) =>
+        p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
+
+    return ListView.builder(
+      itemCount: filtered.length,
+      itemBuilder: (context, index) {
+        final player = filtered[index];
+        return Card(
+          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ListTile(
+            leading: player.photo.isNotEmpty
+                ? CircleAvatar(backgroundImage: NetworkImage(player.photo))
+                : CircleAvatar(child: Text(player.name[0])),
+            title: Text(player.name, style: TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(player.position),
+                Text('Date de naissance : ${player.birthDate}'),
+                Text('Nationalité : ${player.nationality}'),
+              ],
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => PlayerDetail(player: player)),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCompetitionsList() {
+    final filtered = _competitions
+        .where((comp) =>
+        comp.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
+
+    return ListView.builder(
+      itemCount: filtered.length,
+      itemBuilder: (context, index) {
+        final competition = filtered[index];
+        return Card(
+          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ListTile(
+            leading: competition.logo.isNotEmpty
+                ? Image.network(competition.logo, width: 40, height: 40)
+                : CircleAvatar(child: Text(competition.name[0])),
+            title: Text(competition.name,
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(competition.country),
+                Text('Type : ${competition.type}'),
+              ],
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CompetitionDetail(competition: competition),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

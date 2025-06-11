@@ -154,7 +154,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => TeamDetailScreen(team: team),
+                                  builder: (context) => TeamDetail(team: team),
                                 ),
                               );
                             },
@@ -186,7 +186,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => PlayerDetailScreen(player: player),
+                                  builder: (context) => PlayerDetail(player: player),
                                 ),
                               );
                             },
