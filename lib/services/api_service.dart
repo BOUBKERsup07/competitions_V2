@@ -6,10 +6,8 @@ import '../models/team.dart';
 import '../models/player.dart';
 
 class ApiService {
-  // Correction : pas de const ici, juste final
   final String apiKey = '2e41e44e31754e48b9b91087ee7a5f67';
 
-  // Constructeur (optionnel ici, mais utile pour futures options)
   ApiService();
 
   Future<List<Team>> fetchTeamsFromApi() async {
@@ -47,7 +45,6 @@ class ApiService {
         team.name.toLowerCase().contains(query.toLowerCase())).toList();
   }
 
-
   Future<List<Player>> fetchPlayersFromApi(Team team) async {
     final response = await http.get(
       Uri.parse('https://api.football-data.org/v4/teams/${team.id}'),
@@ -66,7 +63,6 @@ class ApiService {
     }
   }
 
-  // Dans api_service.dart
   Future<List<Team>> fetchTeamsByCompetition(int competitionId) async {
     final response = await http.get(
       Uri.parse('https://api.football-data.org/v4/competitions/$competitionId/teams'),

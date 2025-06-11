@@ -24,7 +24,6 @@ class _PlayerDetailState extends State<PlayerDetail> with TickerProviderStateMix
   void initState() {
     super.initState();
     
-    // Animations
     _animationController = AnimationController(
       duration: Duration(milliseconds: 800),
       vsync: this,
@@ -68,7 +67,6 @@ class _PlayerDetailState extends State<PlayerDetail> with TickerProviderStateMix
 
   Future<void> _toggleFavorite() async {
     try {
-      // Animation du bouton
       _favoriteAnimationController.forward().then((_) {
         _favoriteAnimationController.reverse();
       });
@@ -85,10 +83,8 @@ class _PlayerDetailState extends State<PlayerDetail> with TickerProviderStateMix
         });
       }
       
-      // Feedback haptique
       HapticFeedback.lightImpact();
-      
-      // SnackBar moderne
+    
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -165,7 +161,7 @@ class _PlayerDetailState extends State<PlayerDetail> with TickerProviderStateMix
       backgroundColor: Colors.grey[50],
       body: CustomScrollView(
         slivers: [
-          // App Bar moderne avec photo de profil
+         
           SliverAppBar(
             expandedHeight: 350,
             pinned: true,
@@ -190,7 +186,7 @@ class _PlayerDetailState extends State<PlayerDetail> with TickerProviderStateMix
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Photo du joueur avec effet hero
+                     
                         Hero(
                           tag: 'player_photo_${player.id}',
                           child: Container(
@@ -220,7 +216,7 @@ class _PlayerDetailState extends State<PlayerDetail> with TickerProviderStateMix
                           ),
                         ),
                         SizedBox(height: 20),
-                        // Nom du joueur
+
                         Text(
                           player.name,
                           style: TextStyle(
@@ -231,7 +227,7 @@ class _PlayerDetailState extends State<PlayerDetail> with TickerProviderStateMix
                           textAlign: TextAlign.center,
                         ),
                         SizedBox(height: 8),
-                        // Position avec badge
+
                         if (player.position?.isNotEmpty == true)
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -255,7 +251,6 @@ class _PlayerDetailState extends State<PlayerDetail> with TickerProviderStateMix
               ),
             ),
             actions: [
-              // Bouton favori dans l'app bar
               Container(
                 margin: EdgeInsets.only(right: 16),
                 child: ScaleTransition(
@@ -287,7 +282,6 @@ class _PlayerDetailState extends State<PlayerDetail> with TickerProviderStateMix
             ],
           ),
           
-          // Contenu principal
           SliverToBoxAdapter(
             child: FadeTransition(
               opacity: _fadeAnimation,
@@ -295,15 +289,12 @@ class _PlayerDetailState extends State<PlayerDetail> with TickerProviderStateMix
                 padding: EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    // Carte d'informations personnelles
                     _buildPersonalInfoCard(),
                     SizedBox(height: 20),
-                    
-                    // Carte d'informations professionnelles
+
                     _buildProfessionalInfoCard(),
                     SizedBox(height: 30),
-                    
-                    // Bouton d'action flottant
+
                     _buildActionButton(),
                   ],
                 ),

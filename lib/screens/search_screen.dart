@@ -16,7 +16,7 @@ class _SearchScreenState extends State<SearchScreen> {
   final ApiService apiService = ApiService();
 
   String _searchQuery = '';
-  int _selectedTab = 0; // 0 = Competitions, 1 = Teams, 2 = Players
+  int _selectedTab = 0; 
   List<Team> _teams = [];
   List<Player> _players = [];
   List<Competition> _competitions = [];

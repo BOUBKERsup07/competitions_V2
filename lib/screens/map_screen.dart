@@ -24,17 +24,17 @@ class _MapScreenState extends State<MapScreen> {
   String? _errorMessage;
   List<Team> _searchResults = [];
   List<Marker> _markers = [];
-  LatLng _center = LatLng(48.8566, 2.3522); // Paris
+  LatLng _center = LatLng(48.8566, 2.3522);
   Team? _selectedTeam;
 
   @override
   void initState() {
     super.initState();
-    _onSearchChanged(); // Charger toutes les équipes au départ
+    _onSearchChanged();
   }
 
   void _onSearchChanged() async {
-    if (_isShowingFavorites) return; // Ne rien faire si on affiche les favoris
+    if (_isShowingFavorites) return; 
     final query = _searchController.text.trim();
     setState(() {
       _isLoading = true;
@@ -126,7 +126,7 @@ class _MapScreenState extends State<MapScreen> {
     });
 
     try {
-      final favorites = await _dbService.getFavoriteTeams(); // SQLite
+      final favorites = await _dbService.getFavoriteTeams();
       await _buildMarkersFromTeams(favorites);
     } catch (e) {
       setState(() {
@@ -214,7 +214,7 @@ class _MapScreenState extends State<MapScreen> {
                 behavior: HitTestBehavior.translucent,
                 child: Center(
                   child: GestureDetector(
-                    onTap: () {}, // Empêche la propagation du tap au popup
+                    onTap: () {},
                     child: _TeamPopup(
                       team: _selectedTeam!,
                       onClose: () => setState(() => _selectedTeam = null),
@@ -253,7 +253,6 @@ class _TeamPopupState extends State<_TeamPopup> {
   }
 
   Future<void> _checkIfFavorite() async {
-    // On suppose que DatabaseService est accessible via context ou singleton
     final db = DatabaseService();
     final favs = await db.getFavoriteTeams();
     setState(() {

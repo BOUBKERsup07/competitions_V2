@@ -44,11 +44,11 @@ class DatabaseService {
         id INTEGER PRIMARY KEY,
         name TEXT,
         position TEXT,
-        birthDate TEXT,    -- ajout colonne birthDate
+        birthDate TEXT,
         nationality TEXT,
         photo TEXT,
         teamId INTEGER,
-        teamName TEXT      -- ajout colonne teamName
+        teamName TEXT
       )
     ''');
   }
@@ -66,7 +66,7 @@ class DatabaseService {
     final db = await database;
     await db.insert(
       'players',
-      player.toMap(),  // birthDate et teamName inclus dans toMap()
+      player.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
@@ -76,7 +76,6 @@ class DatabaseService {
     final List<Map<String, dynamic>> maps = await db.query('teams');
     return List.generate(maps.length, (i) => Team.fromMap(maps[i]));
   }
-
 
   Future<List<Player>> getFavoritePlayers() async {
     final db = await database;

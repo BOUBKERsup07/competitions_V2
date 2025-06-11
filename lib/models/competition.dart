@@ -18,7 +18,7 @@ class Competition {
       id: json['id'],
       name: json['name'],
       type: json['type'],
-      logo: json['emblem'] ?? json['logo'] ?? '', // Supporte les deux champs possibles
+      logo: json['emblem'] ?? json['logo'] ?? '',
       country: json['area']['name'],
     );
   }

@@ -47,7 +47,6 @@ class Player {
     };
   }
 
-  // Optionnel : calculer l'âge à partir de birthDate
   int get age {
     if (birthDate.isEmpty) return 0;
     try {

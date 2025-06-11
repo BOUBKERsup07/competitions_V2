@@ -72,10 +72,8 @@ class _TeamDetailState extends State<TeamDetail> with TickerProviderStateMixin {
         });
       }
       
-      // Feedback haptique
       HapticFeedback.lightImpact();
       
-      // Snackbar moderne
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -138,7 +136,7 @@ class _TeamDetailState extends State<TeamDetail> with TickerProviderStateMixin {
       backgroundColor: Colors.grey[50],
       body: CustomScrollView(
         slivers: [
-          // App Bar moderne avec image de fond
+
           SliverAppBar(
             expandedHeight: 300,
             pinned: true,
@@ -162,7 +160,7 @@ class _TeamDetailState extends State<TeamDetail> with TickerProviderStateMixin {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Logo de l'équipe avec effet hero
+
                         Hero(
                           tag: 'team_logo_${widget.team.id}',
                           child: Container(
@@ -192,7 +190,7 @@ class _TeamDetailState extends State<TeamDetail> with TickerProviderStateMixin {
                           ),
                         ),
                         SizedBox(height: 16),
-                        // Nom de l'équipe
+
                         Text(
                           widget.team.name,
                           style: TextStyle(
@@ -203,7 +201,7 @@ class _TeamDetailState extends State<TeamDetail> with TickerProviderStateMixin {
                           textAlign: TextAlign.center,
                         ),
                         SizedBox(height: 8),
-                        // Pays
+
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                           decoration: BoxDecoration(
@@ -226,7 +224,6 @@ class _TeamDetailState extends State<TeamDetail> with TickerProviderStateMixin {
               ),
             ),
             actions: [
-              // Bouton favori dans l'app bar
               Container(
                 margin: EdgeInsets.only(right: 16),
                 child: Material(
@@ -250,7 +247,7 @@ class _TeamDetailState extends State<TeamDetail> with TickerProviderStateMixin {
             ],
           ),
           
-          // Contenu principal
+        
           SliverToBoxAdapter(
             child: FadeTransition(
               opacity: _fadeAnimation,
@@ -259,11 +256,9 @@ class _TeamDetailState extends State<TeamDetail> with TickerProviderStateMixin {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Carte d'informations
                     _buildInfoCard(),
                     SizedBox(height: 24),
                     
-                    // Section joueurs
                     _buildPlayersSection(),
                   ],
                 ),

@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Couleurs principales
     static const Color navyBlue = Color(0xFF1A365D);
     static const Color skyBlue = Color(0xFFED8936);
     static const Color offWhite = Color(0xFFF7FAFC);
     static const Color slate = Color(0xFF4A5568);
-  // Dégradé principal
   static const LinearGradient mainGradient = LinearGradient(
     colors: [navyBlue, skyBlue],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  // Glassmorphism (utilisation dans BoxDecoration)
   static BoxDecoration glassBoxDecoration = BoxDecoration(
     color: Colors.white.withOpacity(0.15),
     borderRadius: BorderRadius.circular(20),
@@ -30,7 +27,6 @@ class AppTheme {
     ),
   );
 
-  // Thème clair
   static ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
     primaryColor: navyBlue,
@@ -91,7 +87,6 @@ class AppTheme {
     fontFamily: 'Montserrat',
   );
 
-  // Thème sombre
   static ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     primaryColor: skyBlue,

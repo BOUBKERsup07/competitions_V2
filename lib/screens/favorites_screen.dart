@@ -14,7 +14,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   final DatabaseService _dbService = DatabaseService();
   late Future<List<Team>> _favoriteTeams;
   late Future<List<Player>> _favoritePlayers;
-  int _selectedTab = 0; // 0 = Équipes, 1 = Joueurs
+  int _selectedTab = 0;
 
   @override
   void initState() {
